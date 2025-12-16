@@ -16,6 +16,10 @@ from app.auth.dependencies import (
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
+@router.get("/dashboard")
+def dashboard_redirect():
+    return RedirectResponse("/go_employee")
+
 
 # -----------------------------
 # Employee dashboard
