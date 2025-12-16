@@ -220,6 +220,9 @@ def debug_env():
         "SMTP_USER": os.getenv("SMTP_USER"),
         "FROM_EMAIL": os.getenv("FROM_EMAIL"),
         "ADMIN_EMAIL": os.getenv("ADMIN_EMAIL"),
+        "DB_HOST": os.getenv("DB_HOST"),
+        "DB_USER": os.getenv("DB_USER"),
+        "DB_NAME": os.getenv("DB_NAME"),
     }
 
 # simple test email endpoint (uses your existing send_email util)
