@@ -1,0 +1,126 @@
+{% extends "go_admin.html" %}
+
+{% block header_employee_profile %}
+  {# intentionally empty – hide button on employee salary page #}
+{% endblock %}
+
+{% block content %}
+
+
+<div class="container py-5">
+
+  <!-- USER SUMMARY -->
+  <div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+      <h2 class="h4 mb-1">Welcome {{ user.name or user.get('name', 'Employee') }} 👋</h2>
+      <div class="text-muted small">
+        Email: <strong>{{ user.email or user.get('email', '-') }}</strong>
+      </div>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+      <span class="badge bg-success px-3 py-2 text-uppercase">Role: {{ (user.role or user.get('role', 'employee')) }}</span>
+    </div>
+  </div>
+
+  <!-- CARD -->
+  <div class="card shadow-sm rounded-3">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-0">My Salary Slips</h5>
+          <small class="text-muted">Only salaries for your account are shown below</small>
+        </div>
+      </div>
+
+      {# compute viewer & admin flags once #}
+      {% set viewer_id = None %}
+      {% if user is defined and user %}
+        {% if user.id is defined %}
+          {% set viewer_id = user.id %}
+        {% elif user.get is defined %}
+          {% set viewer_id = user.get('id') %}
+        {% endif %}
+      {% endif %}
+
+      {% set is_admin = False %}
+      {% if user is defined and (user.role is defined or user.get is defined) %}
+        {% set role_val = (user.role if user.role is defined else (user.get('role') if user.get is defined else '')) %}
+        {% if (role_val|string).lower().find('admin') != -1 %}
+          {% set is_admin = True %}
+        {% endif %}
+      {% endif %}
+
+      <div class="table-responsive">
+        <table class="table table-hover table-striped table-bordered align-middle mb-0">
+          <thead class="table-dark">
+            <tr class="text-center">
+              <th style="width:70px">S. No</th>
+              <th style="min-width:140px">Month</th>
+              <th style="min-width:150px">Base Salary</th>
+              <th style="min-width:140px">Deductions</th>
+              <th style="min-width:140px">Net Salary</th>
+              <th style="min-width:170px">Payslip</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% if not salaries %}
+              <tr>
+                <td colspan="6" class="text-center py-4 text-muted">No salary records available.</td>
+              </tr>
+            {% else %}
+              {% set shown = 0 %}
+              {% for s in salaries %}
+                {% if is_admin or (viewer_id is not none and s.employee_id == viewer_id) %}
+                  {% set shown = shown + 1 %}
+                  <tr class="text-center">
+                    <td class="align-middle">{{ loop.index }}</td>
+
+                    <td class="align-middle">
+                      <span class="badge bg-primary">{{ s.month or '-' }}</span>
+                    </td>
+
+                    <td class="align-middle">₹ {{ "%.2f"|format(s.base_salary or 0) }}</td>
+                    <td class="align-middle text-danger">₹ {{ "%.2f"|format(s.deductions or 0) }}</td>
+                    <td class="align-middle fw-bold text-success">₹ {{ "%.2f"|format(s.net_salary or 0) }}</td>
+
+                    <td class="align-middle">
+                      {% if s.slip_file or s.slip_filename or s.file_name %}
+                        <a
+                          href="{{ request.url_for('download_salary', salary_id=s.id) }}"
+                          class="btn btn-success btn-sm d-inline-flex align-items-center"
+                          role="button"
+                          title="Open payslip for {{ s.month or '' }}"
+                          target="_blank" rel="noopener noreferrer"
+                        >
+                          <!-- simple icon + text -->
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.6A1 1 0 0 0 2.5 14h11a1 1 0 0 0 1-1v-2.6a.5.5 0 0 1 1 0v2.6A2 2 0 0 1 13.5 15h-11A2 2 0 0 1 .5 13.5v-2.6a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 1.146a.5.5 0 0 1 .708 0L11 3.793V8.5a.5.5 0 0 1-1 0V4.707L8 2.707 5 4.707V8.5a.5.5 0 0 1-1 0V3.793l2.646-2.647z"/>
+                          </svg>
+                          Download
+                        </a>
+                      {% else %}
+                        <button class="btn btn-outline-secondary btn-sm" disabled>Not available</button>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+
+              {% if shown == 0 %}
+                <tr>
+                  <td colspan="6" class="text-center py-3 text-muted">No salary records found for your account.</td>
+                </tr>
+              {% endif %}
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
