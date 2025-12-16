@@ -1,3 +1,14 @@
+"""
+Script to create an ADMIN user in the database.
+------------------------------------------------
+This script is the BEST and ONLY way to create an admin user.
+It works for both Localhost and Cloud (Aiven) databases.
+It uses 'werkzeug' strictly for password hashing, matching the app's login logic.
+
+Usage:
+1. Ensure .env has the correct database credentials.
+2. Run: python create_admin.py
+"""
 from dotenv import load_dotenv, find_dotenv
 import os
 from passlib.context import CryptContext
@@ -16,19 +27,24 @@ def create_admin():
     # ---------------- ADMIN DETAILS ----------------
     # Change these if you want different credentials
     EMAIL = "ankita@ajxtechnologies.com"
-    PASSWORD = "admin"  # Will be hashed
+    PASSWORD = "adminpass"  # Will be hashed
     NAME = "Admin User"
     # -----------------------------------------------
 
     print(f"Checking if admin '{EMAIL}' exists...")
     existing_user = db.query(Employee).filter(Employee.email == EMAIL).first()
     
+    hashed_password = generate_password_hash(PASSWORD)
+
     if existing_user:
-        print(f"User {EMAIL} already exists!")
+        print(f"User {EMAIL} already exists! Updating password...")
+        existing_user.password_hash = hashed_password
+        existing_user.role = "admin" # Ensure admin role
+        existing_user.status = "active"
+        db.commit()
+        print(f"Password updated successfully! Login with: {EMAIL} / {PASSWORD}")
     else:
         print(f"Creating new admin user: {EMAIL}")
-        hashed_password = generate_password_hash(PASSWORD)
-        
         new_admin = Employee(
             email=EMAIL,
             password_hash=hashed_password,
@@ -36,7 +52,6 @@ def create_admin():
             role="admin",  # Important
             status="active"
         )
-        
         db.add(new_admin)
         db.commit()
         db.refresh(new_admin)

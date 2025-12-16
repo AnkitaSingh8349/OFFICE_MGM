@@ -33,9 +33,8 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 # ---------- Optional Attendance model imports ----------
 POTENTIAL_ATTENDANCE_MODULES = [
     "app.attendance.models",
-    "app.attendance1.models",
     "attendance.models",
-    "attendance1.models",
+    # removed invalid attendance1 modules
 ]
 ATTENDANCE_MODELS = []
 

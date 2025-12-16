@@ -17,7 +17,13 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/dashboard")
-def dashboard_redirect():
+def dashboard_redirect(request: Request):
+    role = request.session.get("role", "employee")
+    if role == "admin":
+        return RedirectResponse("/go_admin")
+    # For HR or Employee
+    if role == "hr":
+        return RedirectResponse("/go_hr")
     return RedirectResponse("/go_employee")
 
 
