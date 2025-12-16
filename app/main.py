@@ -128,21 +128,11 @@ def debug_routes():
             })
     return {"routes": routes}
 
-@app.get("/")
-def home():
-    return {
-        "message": "Office Management System running!",
-        "endpoints": {
-            "login": "/login",
-            "signup": "/signup",
-            "dashboard": "/dashboard",
-            "attendance": "/attendance/",
-            "employees": "/employees/",
-            "leaves": "/leaves",
-            "salary": "/salary/",
-            "tasks": "/tasks/"
-        }
-    }
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("index.html", {
+        "request": request
+    })
 
 # ------------------- INCLUDE YOUR ROUTERS (fixed) -------------------
 
